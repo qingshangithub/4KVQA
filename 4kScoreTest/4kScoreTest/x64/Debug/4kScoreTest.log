@@ -1,0 +1,3 @@
+﻿  4kScoreTest.cpp
+c:\users\sjtu_116\desktop\4kscoretest\4kscoretest\brisque.h(27): warning C4091: “typedef ”: 没有声明变量时忽略“MyStruct”的左侧
+  4kScoreTest.vcxproj -> C:\Users\SJTU_116\Desktop\4kScoreTest\x64\Debug\4kScoreTest.exe
