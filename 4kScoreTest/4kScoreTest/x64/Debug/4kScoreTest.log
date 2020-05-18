@@ -1,3 +1,12 @@
-﻿  4kScoreTest.cpp
-c:\users\sjtu_116\desktop\4kscoretest\4kscoretest\brisque.h(27): warning C4091: “typedef ”: 没有声明变量时忽略“MyStruct”的左侧
-  4kScoreTest.vcxproj -> C:\Users\SJTU_116\Desktop\4kScoreTest\x64\Debug\4kScoreTest.exe
+﻿  brisque.cpp
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.h(27): warning C4091: “typedef ”: 没有声明变量时忽略“MyStruct”的左侧
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.cpp(31): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.cpp(248): warning C4305: “初始化”: 从“double”到“float”截断
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.cpp(249): warning C4305: “初始化”: 从“double”到“float”截断
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.cpp(374): warning C4838: 从“int”转换到“double”需要收缩转换
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.cpp(375): warning C4838: 从“int”转换到“double”需要收缩转换
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.cpp(377): warning C4838: 从“int”转换到“double”需要收缩转换
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.cpp(378): warning C4838: 从“int”转换到“double”需要收缩转换
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.cpp(414): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+c:\users\sjtu_116\documents\github\4kvqa\4kscoretest\4kscoretest\brisque.cpp(441): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+  4kScoreTest.vcxproj -> C:\Users\SJTU_116\Documents\GitHub\4KVQA\4kScoreTest\x64\Debug\4kScoreTest.exe

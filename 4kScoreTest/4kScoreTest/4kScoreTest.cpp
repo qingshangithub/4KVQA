@@ -26,66 +26,66 @@ extern "C" __declspec(dllexport) float** read_range_file_4k_fast(const char* ran
 
 int main(int argc, _TCHAR* argv[])
 {
-//	int w = 3840;
-//	int h = 2160;
-//
-//	const char* pathTmp = "C:\\Users\\SJTU_116\\Desktop\\4kScoreTest\\data\\pic001.yuv";
-//
-//	FILE* pFileIn = fopen(pathTmp, "rb+");
-//	int bufLen = w * h * 3 / 2;
-//
-//	unsigned char* pYuvBuf = new unsigned char[bufLen];
-//	fread(pYuvBuf, bufLen  * sizeof(unsigned char), 1, pFileIn);
-//	
-//	//---------------------------------------------------------------------------------------------------------------------------------------
-//	//start 4kScore program
-//
-//	//load model only once
-//	//load polar parameters
-//	int** dct_data; //Polar conversion parameters
-//	const char* paraPath = "./model/parametersData.txt";
-//	dct_data = loadMatlab(paraPath);
-//	int a = 0;
-//	//load model1
-//	const char* modelfile_1 = "./model/svm_1.model";
-//	struct svm_model* model_1;
-//	if ((model_1 = svm_load_model(modelfile_1)) == 0) {
-//		fprintf(stderr, "can't open model file allmodel\n");
-//		printf("can't open model file allmodel\n");
-//		exit(1);
-//	}
-//	//load model2
-//	const char* modelfile_2 = "./model/svm_2.model";
-//	struct svm_model* model_2;
-//	if ((model_2 = svm_load_model(modelfile_2)) == 0) {
-//		fprintf(stderr, "can't open model file allmodel\n");
-//		printf("can't open model file allmodel\n");
-//		exit(1);
-//	}
-//	//load range file1
-//	float** rescale_vector_4k_1;
-//	const char* range_fname_1 = "./model/svm_1.range";
-//	rescale_vector_4k_1 = read_range_file_4k_fast(range_fname_1);
-//
-//	//load range file2
-//	float** rescale_vector_4k_2;
-//	const char* range_fname_2 = "./model/svm_2.range";
-//	rescale_vector_4k_2 = read_range_file_4k_fast(range_fname_2);
-//
-//	//--------------------------------------------------------------------------------------------------------
-//	//calculate 4k scores for each yuv file
-//	double result = dllvqa(dct_data, rescale_vector_4k_1, rescale_vector_4k_2, model_1, model_2, pYuvBuf);
-//
-//	//--------------------------------------------------------------------------------------------------------
-//	//destroy model only once
-//	svm_free_and_destroy_model(&model_1);
-//	svm_free_and_destroy_model(&model_2);
-//	free_range(rescale_vector_4k_1);
-//	free_range(rescale_vector_4k_2);
-//	free_dct_data(dct_data);
-//
-//	cout << result << endl;
-//
+	int w = 3840;
+	int h = 2160;
+
+	const char* pathTmp = "./data/pic001.yuv";
+
+	FILE* pFileIn = fopen(pathTmp, "rb+");
+	int bufLen = w * h * 3 / 2;
+
+	unsigned char* pYuvBuf = new unsigned char[bufLen];
+	fread(pYuvBuf, bufLen  * sizeof(unsigned char), 1, pFileIn);
+	
+	//---------------------------------------------------------------------------------------------------------------------------------------
+	//start 4kScore program
+
+	//load model only once
+	//load polar parameters
+	int** dct_data; //Polar conversion parameters
+	const char* paraPath = "./model/parametersData.txt";
+	dct_data = loadMatlab(paraPath);
+	int a = 0;
+	//load model1
+	const char* modelfile_1 = "./model/svm_1.model";
+	struct svm_model* model_1;
+	if ((model_1 = svm_load_model(modelfile_1)) == 0) {
+		fprintf(stderr, "can't open model file allmodel\n");
+		printf("can't open model file allmodel\n");
+		exit(1);
+	}
+	//load model2
+	const char* modelfile_2 = "./model/svm_2.model";
+	struct svm_model* model_2;
+	if ((model_2 = svm_load_model(modelfile_2)) == 0) {
+		fprintf(stderr, "can't open model file allmodel\n");
+		printf("can't open model file allmodel\n");
+		exit(1);
+	}
+	//load range file1
+	float** rescale_vector_4k_1;
+	const char* range_fname_1 = "./model/svm_1.range";
+	rescale_vector_4k_1 = read_range_file_4k_fast(range_fname_1);
+
+	//load range file2
+	float** rescale_vector_4k_2;
+	const char* range_fname_2 = "./model/svm_2.range";
+	rescale_vector_4k_2 = read_range_file_4k_fast(range_fname_2);
+
+	//--------------------------------------------------------------------------------------------------------
+	//calculate 4k scores for each yuv file
+	double result = dllvqa(dct_data, rescale_vector_4k_1, rescale_vector_4k_2, model_1, model_2, pYuvBuf);
+
+	//--------------------------------------------------------------------------------------------------------
+	//destroy model only once
+	svm_free_and_destroy_model(&model_1);
+	svm_free_and_destroy_model(&model_2);
+	free_range(rescale_vector_4k_1);
+	free_range(rescale_vector_4k_2);
+	free_dct_data(dct_data);
+
+	cout << result << endl;
+
 	return 0;
 }
 
@@ -395,7 +395,10 @@ double dllvqa(int** data, float**rescale_vector_4k_1, float**rescale_vector_4k_2
 
 	vector<double> features4K;
 
-	cv::Mat src_Img = DisplayYUV(pYuvBuf);
+	//cv::Mat src_Img = DisplayYUV(pYuvBuf);
+	//cv::imwrite("img.bmp", src_Img);
+	cv::Mat src_Img = cv::imread("test/4.bmp",0);
+	src_Img.convertTo(src_Img, CV_64F, 1.0);
 	/***3. compute feature***/
 	is4k_flag = Compute4KFeature_fast(src_Img, features4K, data);
 	// clock_t time2 = clock() - time1 - time_begin;
@@ -437,6 +440,10 @@ double dllvqa(int** data, float**rescale_vector_4k_1, float**rescale_vector_4k_2
 
 	double qualityscore = (qualityscore_1 + qualityscore_2) / 2;
 	
+	cout << "qulityscore_1 " << qualityscore_1 << endl;
+	cout << "qulityscore_2 " << qualityscore_2 << endl;
+	cout << "qualityscore " << qualityscore << endl;
+
 	is4k_flag = true;
 
 	if (qualityscore_2 < 88)
@@ -447,6 +454,9 @@ double dllvqa(int** data, float**rescale_vector_4k_1, float**rescale_vector_4k_2
 	{
 		is4k_flag = false;
 	}
+
+	cout << "is4k_flag " << is4k_flag << endl;
+
 	if (qualityscore>=0&&qualityscore<=100)
 	{
 		return qualityscore;

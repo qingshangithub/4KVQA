@@ -157,6 +157,8 @@ bool Compute4KFeature_fast(cv::Mat &src_Img, vector<double>& featureVector4K, in
 	MyStruct resultFeature_1;
 	MyStruct resultFeature_2;
 	MyStruct resultFeature_3;
+	cv::Mat sub_tmp = subImg_2;
+	sub_tmp.convertTo(sub_tmp, CV_8U, 1.0);
 	resultFeature_1 = compute_FeatureSD(subImg_1, data_dct);
 	resultFeature_2 = compute_FeatureSD(subImg_2, data_dct);
 	resultFeature_3 = compute_FeatureSD(subImg_3, data_dct);
@@ -400,6 +402,7 @@ MyStruct compute_FeatureSD(cv::Mat &src_Img, int** dct_data)
 	vector<double> fHist;//P_dct in matlab code
 	for (int fi=0;fi<N+1;fi++)
 	{
+		//这里初始值设为1而不是0是因为0求log会得到负无穷
 		double meanSum = 1.0;
 		for (int fj=1;fj<= dct_data[fi][0];fj++)
 		{
@@ -427,13 +430,20 @@ MyStruct compute_FeatureSD(cv::Mat &src_Img, int** dct_data)
 	}
 	double tmp = *max_element(fHist.begin(), fHist.end());
 	double tmp2 = *min_element(fHist.begin(), fHist.end());
-	double maxValue = ceil(*max_element(fHist.begin(), fHist.end()));
-	double minValue = floor(*min_element(fHist.begin(), fHist.end()));
+	double maxValue = *max_element(fHist.begin(), fHist.end());
+	double minValue = *min_element(fHist.begin(), fHist.end());
 
+	double span = maxValue - minValue;
 
 	for (auto it:fHist)
 	{
-		int indexHdct = ((it - minValue) * 10) / (maxValue - minValue);
+		double dif = (it - minValue)*10.0;
+		int indexHdct = floor( dif / span);
+		if (it==maxValue)
+		{
+			indexHdct=9;
+		}
+		// int indexHdct = ((it - minValue) * 10) / (maxValue - minValue);
 		resultFeature.H_dct[indexHdct]++;
 	}
 
@@ -447,7 +457,7 @@ MyStruct compute_FeatureSD(cv::Mat &src_Img, int** dct_data)
 	{
 		if (temp>F1)
 		{
-			resultFeature.X_dct[0] = i;
+			resultFeature.X_dct[0] = i+1;
 			break;
 		}
 		temp = temp + fHist[i + 1];
@@ -458,7 +468,7 @@ MyStruct compute_FeatureSD(cv::Mat &src_Img, int** dct_data)
 	{
 		if (temp > F2)
 		{
-			resultFeature.X_dct[1] = i;
+			resultFeature.X_dct[1] = i+1;
 			break;
 		}
 		temp = temp + fHist[i + 1];
@@ -469,7 +479,7 @@ MyStruct compute_FeatureSD(cv::Mat &src_Img, int** dct_data)
 	{
 		if (temp > F3)
 		{
-			resultFeature.X_dct[2] = i;
+			resultFeature.X_dct[2] = i+1;
 			break;
 		}
 		temp = temp + fHist[i + 1];
@@ -480,7 +490,7 @@ MyStruct compute_FeatureSD(cv::Mat &src_Img, int** dct_data)
 	{
 		if (temp > F4)
 		{
-			resultFeature.X_dct[3] = i;
+			resultFeature.X_dct[3] = i+1;
 			break;
 		}
 		temp = temp + fHist[i + 1];
@@ -562,7 +572,7 @@ void compute_LvValue_FeatureVar_fast(cv::Mat &src_Img, double * lvValue, double 
 	cv::Mat sigma_absImg = cv::abs(sigma_Img);
 	cv::Mat sigma_sqrtImg;
 	cout << endl;
-	cout << int(sigma_absImg.at<uchar>(0,0)) << endl;
+	//cout << int(sigma_absImg.at<uchar>(0,0)) << endl;
 	cv::Mat sigma_absImg2;
 	sigma_absImg.convertTo(sigma_absImg2, CV_32F);
 	cv::sqrt(sigma_absImg2, sigma_sqrtImg);
@@ -571,7 +581,7 @@ void compute_LvValue_FeatureVar_fast(cv::Mat &src_Img, double * lvValue, double 
 	// 计算feature var
 	cv::Range row_tmp;
 	cv::Range col_tmp;
-	*featureVar = compute_FeatureVar(sigma_Img, &row_tmp, &col_tmp);
+	// *featureVar = compute_FeatureVar(sigma_Img, &row_tmp, &col_tmp);
 	// 计算子图局部复杂性
 	int mm = 9, nn = 16;
 	int row,col;
@@ -599,6 +609,7 @@ void compute_LvValue_FeatureVar_fast(cv::Mat &src_Img, double * lvValue, double 
 			}
 		}
 	}
+	*featureVar = maxValue;
 	cv::Range row_Range;
 	cv::Range col_Range;
 	row_Range.start = rowIndex * sigma_sqrtImg.rows / mm;
@@ -606,16 +617,19 @@ void compute_LvValue_FeatureVar_fast(cv::Mat &src_Img, double * lvValue, double 
 	col_Range.start = colIndex * sigma_sqrtImg.cols / nn;
 	col_Range.end = (colIndex + 1) * sigma_sqrtImg.cols / nn;
 	*subImg = src_Img(row_Range, col_Range);
-	// imwrite("./temp/subImg.bmp", subImg);
+
+	cv::Mat sub = src_Img(row_Range, col_Range);
+	sub.convertTo(sub, CV_8U, 1.0);
+    // imwrite("./temp/subImg.bmp", sub);
 	// 取中间
-	for (row = 0; row < 2; row++)
+	for (row = 0; row < 1; row++)
 	{
 		for (col = 0; col < nn; col++)
 		{
 			score[row][col] = 0;
 		}
 	}
-	for (row = mm-2; row < mm; row++)
+	for (row = mm-1; row < mm; row++)
 	{
 		for (col = 0; col < nn; col++)
 		{
@@ -666,6 +680,9 @@ void compute_LvValue_FeatureVar_fast(cv::Mat &src_Img, double * lvValue, double 
 	col_Range_1.start = colIndex * sigma_sqrtImg.cols / nn;
 	col_Range_1.end = (colIndex + 1) * sigma_sqrtImg.cols / nn;
 	*subImg_1 = src_Img(row_Range_1, col_Range_1);
+
+	cv::Mat sub_1 = src_Img(row_Range_1, col_Range_1);
+	sub_1.convertTo(sub_1, CV_8U, 1.0);
 	// imwrite("./temp/subImg_1.bmp", subImg_1);
 	// 2-第二大
 	maxValue = 0.0;
@@ -692,6 +709,9 @@ void compute_LvValue_FeatureVar_fast(cv::Mat &src_Img, double * lvValue, double 
 	col_Range_2.start = colIndex * sigma_sqrtImg.cols / nn;
 	col_Range_2.end = (colIndex + 1) * sigma_sqrtImg.cols / nn;
 	*subImg_2 = src_Img(row_Range_2, col_Range_2);
+
+	cv::Mat sub_2 = src_Img(row_Range_2, col_Range_2);
+	sub_2.convertTo(sub_2, CV_8U, 1.0);
 	// imwrite("./temp/subImg_2.bmp", subImg_2);
 	// 3-第三大
 	maxValue = 0.0;
@@ -718,6 +738,9 @@ void compute_LvValue_FeatureVar_fast(cv::Mat &src_Img, double * lvValue, double 
 	col_Range_3.start = colIndex * sigma_sqrtImg.cols / nn;
 	col_Range_3.end = (colIndex + 1) * sigma_sqrtImg.cols / nn;
 	*subImg_3 = src_Img(row_Range_3, col_Range_3);
+
+	cv::Mat sub_3 = src_Img(row_Range_3, col_Range_3);
+	sub_3.convertTo(sub_3, CV_8U, 1.0);
 	// imwrite("./temp/subImg_3.bmp", subImg_3);
 
 	*lvValue = (S1 + S2 + S3) / 3;
