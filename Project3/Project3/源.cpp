@@ -6,19 +6,17 @@
 using namespace std;
 
 int main() {
-	time_t start = clock();
-	//---------------------------------------------------------------------------------------------------------------------------------------
-	//simulate the input of data flow
 	int w = 3840;
 	int h = 2160;
 
-	const char* pathTmp = "C:\\Users\\SJTU_116\\source\\repos\\Project3\\Project3\\data\\pic001.yuv";
+	const char* pathTmp = "./data/pic001.yuv";
 
 	FILE* pFileIn = fopen(pathTmp, "rb+");
-	int bufLen = w*h * 3 / 2;
-	unsigned char* pYuvBuf = new unsigned char[bufLen];
+	int bufLen = w * h * 3 / 2;
 
+	unsigned char* pYuvBuf = new unsigned char[bufLen];
 	fread(pYuvBuf, bufLen * sizeof(unsigned char), 1, pFileIn);
+
 	//---------------------------------------------------------------------------------------------------------------------------------------
 	//start 4kScore program
 
@@ -47,7 +45,7 @@ int main() {
 	//load range file1
 	float** rescale_vector_4k_1;
 	const char* range_fname_1 = "./model/svm_1.range";
-	rescale_vector_4k_1=read_range_file_4k_fast(range_fname_1);
+	rescale_vector_4k_1 = read_range_file_4k_fast(range_fname_1);
 
 	//load range file2
 	float** rescale_vector_4k_2;
@@ -56,7 +54,8 @@ int main() {
 
 	//--------------------------------------------------------------------------------------------------------
 	//calculate 4k scores for each yuv file
-	double result = dllvqa(dct_data, rescale_vector_4k_1, rescale_vector_4k_2,model_1,model_2, pYuvBuf);
+	VqaResult result;
+	result = dllvqa(dct_data, rescale_vector_4k_1, rescale_vector_4k_2, model_1, model_2, pYuvBuf);
 
 	//--------------------------------------------------------------------------------------------------------
 	//destroy model only once
@@ -66,9 +65,11 @@ int main() {
 	free_range(rescale_vector_4k_2);
 	free_dct_data(dct_data);
 
-	time_t end = clock();
-	printf("the running time is:%fs\n", double(end - start) / CLOCKS_PER_SEC); //√Î
-	cout << result << endl;
+	cout << "qualityscore_1:" << result.qualityscore_1 << endl;
+	cout << "qualityscore_2:" << result.qualityscore_2 << endl;
+	cout << "qualityscore:" << result.qualityscore << endl;
+	cout << "is4k_flag:" << result.is4k_flag << endl;
+
 
 	return 0;
 }

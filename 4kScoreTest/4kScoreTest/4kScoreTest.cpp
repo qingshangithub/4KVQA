@@ -21,7 +21,7 @@ cv::Mat DisplayYUV(unsigned char* pYuvBuf);
 extern "C" __declspec(dllexport) void free_range(float **rescale_vector_4k);
 extern "C" __declspec(dllexport) void free_dct_data(int **dct_data);
 extern "C" __declspec(dllexport) int** loadMatlab(const char* paraPath);
-extern "C" __declspec(dllexport) double dllvqa(int** data,float**rescale_vector_4k_1, float**rescale_vector_4k_2, svm_model* model1, svm_model* model2, unsigned char* pYuvBuf);
+extern "C" __declspec(dllexport) VqaResult dllvqa(int** data,float**rescale_vector_4k_1, float**rescale_vector_4k_2, svm_model* model1, svm_model* model2, unsigned char* pYuvBuf);
 extern "C" __declspec(dllexport) float** read_range_file_4k_fast(const char* range_fname);
 
 int main(int argc, _TCHAR* argv[])
@@ -74,7 +74,8 @@ int main(int argc, _TCHAR* argv[])
 
 	//--------------------------------------------------------------------------------------------------------
 	//calculate 4k scores for each yuv file
-	double result = dllvqa(dct_data, rescale_vector_4k_1, rescale_vector_4k_2, model_1, model_2, pYuvBuf);
+	VqaResult result;
+	result = dllvqa(dct_data, rescale_vector_4k_1, rescale_vector_4k_2, model_1, model_2, pYuvBuf);
 
 	//--------------------------------------------------------------------------------------------------------
 	//destroy model only once
@@ -84,7 +85,11 @@ int main(int argc, _TCHAR* argv[])
 	free_range(rescale_vector_4k_2);
 	free_dct_data(dct_data);
 
-	cout << result << endl;
+	cout << "qualityscore_1:"<<result.qualityscore_1 << endl;
+	cout << "qualityscore_2:" << result.qualityscore_2 << endl;
+	cout << "qualityscore:" << result.qualityscore << endl;
+	cout << "is4k_flag:" << result.is4k_flag << endl;
+
 
 	return 0;
 }
@@ -382,7 +387,7 @@ cv::Mat DisplayYUV(unsigned char* pYuvBuf)
 	return rgbImgGray;
 }
 
-double dllvqa(int** data, float**rescale_vector_4k_1, float**rescale_vector_4k_2, svm_model* model_1, svm_model* model_2, unsigned char* pYuvBuf) {
+VqaResult dllvqa(int** data, float**rescale_vector_4k_1, float**rescale_vector_4k_2, svm_model* model_1, svm_model* model_2, unsigned char* pYuvBuf) {
 
 	int w = 3840;
 	int h = 2160;
@@ -395,9 +400,9 @@ double dllvqa(int** data, float**rescale_vector_4k_1, float**rescale_vector_4k_2
 
 	vector<double> features4K;
 
-	//cv::Mat src_Img = DisplayYUV(pYuvBuf);
+	cv::Mat src_Img = DisplayYUV(pYuvBuf);
 	//cv::imwrite("img.bmp", src_Img);
-	cv::Mat src_Img = cv::imread("test/4.bmp",0);
+	//cv::Mat src_Img = cv::imread("test/10.bmp",0);
 	src_Img.convertTo(src_Img, CV_64F, 1.0);
 	/***3. compute feature***/
 	is4k_flag = Compute4KFeature_fast(src_Img, features4K, data);
@@ -439,10 +444,13 @@ double dllvqa(int** data, float**rescale_vector_4k_1, float**rescale_vector_4k_2
 	free(prob_estimates_2);
 
 	double qualityscore = (qualityscore_1 + qualityscore_2) / 2;
-	
-	cout << "qulityscore_1 " << qualityscore_1 << endl;
-	cout << "qulityscore_2 " << qualityscore_2 << endl;
-	cout << "qualityscore " << qualityscore << endl;
+	VqaResult finalResult;
+	finalResult.qualityscore_1 = qualityscore_1;
+	finalResult.qualityscore_2 = qualityscore_2;
+	finalResult.qualityscore = qualityscore;
+	//cout << "qulityscore_1 " << qualityscore_1 << endl;
+	//cout << "qulityscore_2 " << qualityscore_2 << endl;
+	//cout << "qualityscore " << qualityscore << endl;
 
 	is4k_flag = true;
 
@@ -454,16 +462,19 @@ double dllvqa(int** data, float**rescale_vector_4k_1, float**rescale_vector_4k_2
 	{
 		is4k_flag = false;
 	}
-
-	cout << "is4k_flag " << is4k_flag << endl;
+	finalResult.is4k_flag = is4k_flag;
+	//cout << "is4k_flag " << is4k_flag << endl;
 
 	if (qualityscore>=0&&qualityscore<=100)
 	{
-		return qualityscore;
+		return finalResult;
 	}
 	else
 	{
-		return -1;
+		finalResult.qualityscore_1 = -1.0;
+		finalResult.qualityscore_2 = -1.0;
+		finalResult.qualityscore = -1.0;
+		return finalResult;
 	}
 	
 }

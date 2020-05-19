@@ -520,7 +520,7 @@ void compute_LvValue_FeatureVar(cv::Mat &src_Img, double * lvValue, double *feat
 
 	*featureVar = compute_FeatureVar(sigma_Img, &rowRange, &colRange);
 	cv::Mat subImg = src_Img(rowRange, colRange);
-	imwrite("./temp/subImg.bmp", subImg);
+	//imwrite("./temp/subImg.bmp", subImg);
 
 }
 

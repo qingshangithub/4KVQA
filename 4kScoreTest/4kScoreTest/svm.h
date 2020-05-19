@@ -9,6 +9,14 @@ extern "C" {
 
 extern int libsvm_version;
 
+typedef struct VqaResult
+{
+	double qualityscore_1 = 0.0;
+	double qualityscore_2 = 0.0;
+	double qualityscore = 0.0;
+	bool is4k_flag = false;
+};
+
 struct svm_node
 {
 	int index;
